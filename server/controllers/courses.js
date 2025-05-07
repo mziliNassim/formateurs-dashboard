@@ -1,3 +1,4 @@
+const Activities = require("../models/Activities");
 const Cours = require("../models/Cours");
 const mongoose = require("mongoose");
 
@@ -133,7 +134,15 @@ const addCourse = async (req, res) => {
       tags: Array.isArray(tags) ? tags : tags ? [tags] : [],
     });
 
+    // Handle activity action
+    const activite = new Activities({
+      title: "Création d'un cours",
+      description: titre,
+      type: "Create",
+    });
+
     const savedCourse = await newCourse.save();
+    await activite.save();
 
     res.status(201).json({
       success: true,
