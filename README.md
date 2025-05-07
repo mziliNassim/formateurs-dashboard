@@ -33,87 +33,6 @@ Ce projet est un dashboard permettant aux formateurs de créer et gérer des cou
 - **Base de données**: MongoDB
 - **Authentification**: JWT
 
-## Structure du Projet
-
-```
-/Dashboard
-  /client
-    /public
-    /src
-      /components
-        /auth
-          LoginForm.jsx
-          ProtectedRoute.jsx
-        /courses
-          CourseForm.jsx
-          CourseList.jsx
-          CourseItem.jsx
-          MediaUploader.jsx
-          ContentTypeSelector.jsx
-        /ui
-          Modal.jsx
-          DragDropList.jsx
-          RichTextEditor.jsx
-          FilePreview.jsx
-      /pages
-        Dashboard.jsx
-        Courses.jsx
-        AddCourse.jsx
-        EditCourse.jsx
-      /context
-        AuthContext.jsx
-        CourseContext.jsx
-      /services
-        api.js
-        authService.js
-        courseService.js
-      /hooks
-        useForm.js
-        useMediaUpload.js
-      /utils
-        validators.js
-        helpers.js
-      /assets
-        /styles
-          tailwind.config.js
-          global.css
-      App.jsx
-      main.jsx
-
-  /server
-    /config
-      db.js
-      storage.js
-      jwt.js
-    /controllers
-      authController.js
-      courseController.js
-      mediaController.js
-    /models
-      User.js
-      Course.js
-      Module.js
-    /routes
-      authRoutes.js
-      courseRoutes.js
-      mediaRoutes.js
-    /middlewares
-      authMiddleware.js
-      errorMiddleware.js
-      uploadMiddleware.js
-    /utils
-      logger.js
-      validationSchemas.js
-    app.js
-    server.js
-  /docs
-    API.md
-    ERD.md
-  .env
-  package.json
-  README.md
-```
-
 ## Installation
 
 ### Prérequis
@@ -127,7 +46,7 @@ Ce projet est un dashboard permettant aux formateurs de créer et gérer des cou
 ```bash
 cd client
 npm install
-npm start
+npm run dev
 ```
 
 ### Installation du Backend
@@ -135,7 +54,7 @@ npm start
 ```bash
 cd server
 npm install
-npm start
+npm run start
 ```
 
 ## Développement
@@ -145,23 +64,16 @@ npm start
 Créez un fichier `.env` dans le dossier server avec les variables suivantes :
 
 ```
-MONGODB_URI=votre_uri_mongodb
-JWT_SECRET=votre_secret_jwt
-PORT=5000
-NODE_ENV=development
+PORT = 5000
+
+MONGO_URI = your mongo uri OR mongodb://localhost:27017/your-db-name
+
+JWT_SECRET = your_jwt_secret
+
+NODE_ENV = development
+
+NODEMAILER_USER = NodeMailer_user_email
+NODEMAILER_PASSWORD = NodeMailer_user_password
+
+CLIENT_URL = http://localhost:5173/
 ```
-
-## Déploiement
-
-L'application peut être déployée sur n'importe quelle plateforme supportant Node.js et MongoDB.
-
-## Sécurité
-
-- Authentification JWT
-- Protection CSRF
-- Validation des données côté serveur
-- Stockage sécurisé des médias
-
-## Accessibilité
-
-L'interface est conforme aux normes WCAG 2.1 niveau AA pour garantir l'accessibilité à tous les utilisateurs.
