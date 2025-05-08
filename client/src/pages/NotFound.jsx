@@ -1,93 +1,122 @@
-import React from "react";
-import { Home, RefreshCw, ArrowLeft } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Home, RefreshCw, ArrowLeft, AlertTriangle } from "lucide-react";
 
 const Notfound = () => {
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(12)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full opacity-10"
-            style={{
-              backgroundColor: "#f35a57",
-              width: Math.random() * 300 + 100 + "px",
-              height: Math.random() * 300 + 100 + "px",
-              top: Math.random() * 100 + "%",
-              left: Math.random() * 100 + "%",
-              transform: `translate(-50%, -50%)`,
-              animation: `float ${
-                Math.random() * 20 + 10
-              }s infinite ease-in-out`,
-              animationDelay: `${Math.random() * 5}s`,
-            }}
-          />
-        ))}
-      </div>
+  const [isAnimating, setIsAnimating] = useState(false);
 
-      {/* Content container */}
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-purple-800">
+      {/* Geometric decorative elements */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 opacity-10 rounded-bl-full"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500 opacity-10 rounded-tr-full"></div>
+
+      {/* Content container with glass effect */}
       <div className="relative z-10 w-full max-w-4xl px-4 py-12 mx-auto text-center">
         {/* Main content */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
-          {/* 404 header */}
-          <div className="mb-10">
-            <div className="flex items-center justify-center mb-6">
-              <span className="text-8xl font-bold text-[#f35a57]">404</span>
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 md:p-12 border border-white/20">
+          {/* Glowing 404 header */}
+          <div className="mb-10 relative">
+            <div className="absolute inset-0 flex items-center justify-center mb-6 blur-2xl opacity-50">
+              <span className="text-9xl font-extrabold text-purple-500">
+                404
+              </span>
+            </div>
+            <div className="flex items-center justify-center mb-6 relative">
+              <span className="text-9xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-500">
+                404
+              </span>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Page Not Found
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Oops! Page Not Found
             </h1>
 
-            <p className="text-gray-600 max-w-md mx-auto">
-              The page you're looking for doesn't exist or has been moved.
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-16 h-1 bg-gradient-to-r from-purple-400 to-indigo-500 rounded-full"></div>
+            </div>
+
+            <p className="text-purple-200 max-w-md mx-auto">
+              The digital path you're seeking seems to have vanished into the
+              void.
             </p>
           </div>
 
-          {/* Messages and actions */}
+          {/* Action buttons with hover effects */}
           <div className="space-y-8">
-            <div className="bg-[#f35a57]/10 border-l-4 border-[#f35a57] p-4 text-left rounded-r-lg">
-              <p className="text-gray-700">
-                We couldn't find the page you were looking for. Don't worry, we
-                can help you find your way back.
-              </p>
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-4">
+            <div className="flex flex-wrap items-center justify-center gap-5">
               <a
                 href="/"
-                className="flex items-center justify-center gap-2 bg-[#f35a57] hover:bg-[#f35a57]/90 text-white rounded-lg px-6 py-3 transition-all shadow-sm hover:shadow"
+                className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl px-6 py-3.5 transition-all duration-300 shadow-lg hover:shadow-purple-500/30 transform hover:-translate-y-1 group"
               >
-                <Home size={18} />
-                Go Home
+                <Home size={18} className="group-hover:animate-bounce" />
+                <span>Go Home</span>
               </a>
 
               <button
                 onClick={() => window.location.reload()}
-                className="flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 rounded-lg px-6 py-3 transition-all shadow-sm hover:shadow"
+                className="flex items-center justify-center cursor-pointer gap-2 bg-white/10 backdrop-blur-sm border border-purple-300/30 hover:bg-white/20 text-white rounded-xl px-6 py-3.5 transition-all duration-300 shadow-lg hover:shadow-purple-500/20 transform hover:-translate-y-1 group"
               >
-                <RefreshCw size={18} />
-                Try Again
+                <RefreshCw size={18} className="group-hover:animate-spin" />
+                <span>Try Again</span>
               </button>
 
               <button
                 onClick={() => window.history.back()}
-                className="flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 rounded-lg px-6 py-3 transition-all shadow-sm hover:shadow"
+                className="flex items-center justify-center cursor-pointer gap-2 bg-white/10 backdrop-blur-sm border border-purple-300/30 hover:bg-white/20 text-white rounded-xl px-6 py-3.5 transition-all duration-300 shadow-lg hover:shadow-purple-500/20 transform hover:-translate-y-1 group"
               >
-                <ArrowLeft size={18} />
-                Go Back
+                <ArrowLeft size={18} className="group-hover:animate-pulse" />
+                <span>Go Back</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="mt-8 text-gray-500 text-sm">
-          © {new Date().getFullYear()} ICEF. All rights reserved.
+        <div className="mt-10 text-purple-200 text-sm">
+          <p>© {new Date().getFullYear()}. All rights reserved.</p>
+          <p className="mt-2 text-purple-300/70">
+            Beautifully lost in the digital universe
+          </p>
         </div>
       </div>
+
+      {/* CSS for cursor trail effect */}
+      <style jsx>{`
+        @keyframes float {
+          0%,
+          100% {
+            transform: translate(-50%, -50%) translateY(0) scale(1);
+          }
+          50% {
+            transform: translate(-50%, -50%) translateY(-20px) scale(1.05);
+          }
+        }
+
+        .cursor-trail {
+          position: absolute;
+          width: 8px;
+          height: 8px;
+          background: rgba(192, 132, 252, 0.6);
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 10000;
+          transform: translate(-50%, -50%);
+          animation: fadeOut 1.5s forwards;
+        }
+
+        @keyframes fadeOut {
+          0% {
+            opacity: 0.7;
+            width: 8px;
+            height: 8px;
+          }
+          100% {
+            opacity: 0;
+            width: 50px;
+            height: 50px;
+          }
+        }
+      `}</style>
     </div>
   );
 };

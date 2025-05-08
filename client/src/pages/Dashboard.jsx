@@ -67,7 +67,13 @@ const Dashboard = () => {
         setLoadingPage(true);
         setLoadingCourses(true);
         const { data } = await axios.get(
-          `${serverURL_COURSES}?page=${currentPage}&sortBy=ordrePublication&order=${sortOrder}`
+          `${serverURL_COURSES}?page=${currentPage}&sortBy=ordrePublication&order=${sortOrder}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${user?.token}`,
+            },
+          }
         );
 
         if (data.success) {

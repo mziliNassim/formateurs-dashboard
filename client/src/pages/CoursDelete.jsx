@@ -6,17 +6,25 @@ import axios from "axios";
 import { serverURL_COURSES } from "../assets/data";
 import { toast } from "sonner";
 import LoadingPage from "../components/LoadingPage";
+import { useSelector } from "react-redux";
 
 const CoursDelete = () => {
-  const [loadingPage, setLoadingPage] = useState(true);
+  const { user } = useSelector((state) => state.user);
   const { id } = useParams();
+
+  const [loadingPage, setLoadingPage] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const deleteCours = async () => {
       try {
         setLoadingPage(true);
-        const { data } = await axios.delete(`${serverURL_COURSES}/${id}`);
+        const { data } = await axios.delete(`${serverURL_COURSES}/${id}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+        });
         toast.success(data?.message || "Cours est bien supprimer", {
           action: { label: "✖️" },
         });

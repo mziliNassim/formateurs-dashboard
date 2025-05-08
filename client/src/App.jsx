@@ -5,7 +5,11 @@ import { Toaster } from "sonner";
 import Dashboard from "./pages/Dashboard.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import AddCours from "./pages/AddCours.jsx";
+
+import Profile from "./pages/Profile.jsx";
+import Formateurs from "./pages/Formateurs.jsx";
 import CreateFormateur from "./pages/CreateFormateur.jsx";
+import UpdateFormateur from "./pages/UpdateFormateur.jsx";
 
 import CoursDetails from "./pages/CoursDetails.jsx";
 import CoursUpdate from "./pages/CoursUpdate.jsx";
@@ -74,7 +78,14 @@ const App = () => {
 
             <Route path="dashboard">
               <Route path="" element={<Dashboard />} />
+
+              <Route path="formateurs" element={<Formateurs />} />
               <Route path="create-formateur" element={<CreateFormateur />} />
+              <Route
+                path="update-formateur/:id"
+                element={<UpdateFormateur />}
+              />
+              <Route path="profile" element={<Profile />} />
 
               <Route path="courses/new" element={<AddCours />} />
 

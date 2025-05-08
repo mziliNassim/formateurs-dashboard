@@ -25,8 +25,10 @@ import {
 import { serverURL_COURSES, serverURL_MODULES } from "../assets/data";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import LoadingPage from "../components/LoadingPage";
+import { useSelector } from "react-redux";
 
 const CoursUpdate = () => {
+  const { user } = useSelector((state) => state.user);
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -58,7 +60,13 @@ const CoursUpdate = () => {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const { data } = await axios.get(`${serverURL_COURSES}/${id}`);
+        const { data } = await axios.get(`${serverURL_COURSES}/${id}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+        });
+
         if (data.success) {
           setCourseData({
             titre: data.data.titre,
@@ -86,7 +94,12 @@ const CoursUpdate = () => {
     const fetchModules = async () => {
       setIsLoadingModules(true);
       try {
-        const { data } = await axios.get(serverURL_MODULES);
+        const { data } = await axios.get(serverURL_MODULES, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+        });
         setModules(data?.data || []);
       } catch (error) {
         toast.error("Impossible de charger les modules", {
@@ -134,7 +147,13 @@ const CoursUpdate = () => {
     try {
       const response = await axios.put(
         `${serverURL_COURSES}/${id}`,
-        courseData
+        courseData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+        }
       );
 
       if (response.data.success) {

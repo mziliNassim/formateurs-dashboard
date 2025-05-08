@@ -11,8 +11,10 @@ import {
 } from "lucide-react";
 
 import { serverURL_MODULES } from "../../assets/data";
+import { useSelector } from "react-redux";
 
 const ModulesSection = () => {
+  const { user } = useSelector((state) => state.user);
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,7 +37,12 @@ const ModulesSection = () => {
     const fetchModules = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get(serverURL_MODULES);
+        const { data } = await axios.get(serverURL_MODULES, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+        });
 
         if (data.success) {
           setModules(data.data);
@@ -114,7 +121,13 @@ const ModulesSection = () => {
         // Update existing module
         const { data } = await axios.put(
           `${serverURL_MODULES}/${currentModule._id}`,
-          formData
+          formData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${user?.token}`,
+            },
+          }
         );
 
         if (data.success) {
@@ -125,7 +138,12 @@ const ModulesSection = () => {
         }
       } else {
         // Create new module
-        const { data } = await axios.post(serverURL_MODULES, formData);
+        const { data } = await axios.post(serverURL_MODULES, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+        });
 
         if (data.success) {
           setModules([...modules, data.data]);
@@ -159,7 +177,12 @@ const ModulesSection = () => {
   // Handle delete
   const handleDelete = async (id) => {
     try {
-      const { data } = await axios.delete(`${serverURL_MODULES}/${id}`);
+      const { data } = await axios.delete(`${serverURL_MODULES}/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
 
       if (data.success) {
         setModules(modules.filter((m) => m._id !== id));

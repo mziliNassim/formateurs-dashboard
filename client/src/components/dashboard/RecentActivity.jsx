@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { serverURL_ACTIVITIES } from "../../assets/data";
+import { useSelector } from "react-redux";
 
 function formatTimeSince(dateString) {
   const now = new Date();
@@ -52,6 +53,8 @@ function formatTimeSince(dateString) {
 }
 
 const RecentActivity = () => {
+  const { user } = useSelector((state) => state.user);
+
   const [activities, setActivities] = useState([]);
   const [activitiesNums, setActivitiesNums] = useState(3);
   const [loading, setLoading] = useState(true);
@@ -61,7 +64,12 @@ const RecentActivity = () => {
     const fetchActivities = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get(serverURL_ACTIVITIES);
+        const { data } = await axios.get(serverURL_ACTIVITIES, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+        });
         const activitiesUI = data?.data
           ?.slice(-activitiesNums)
           .reverse()
@@ -83,6 +91,7 @@ const RecentActivity = () => {
           });
         setActivities(activitiesUI);
       } catch (error) {
+        console.log(" fetchActivities ~ error:", error);
         toast.error(
           error?.response?.data?.message ||
             "Erreur lors de la récupération des activités",

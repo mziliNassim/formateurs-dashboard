@@ -24,8 +24,11 @@ import {
 
 import { serverURL_COURSES, serverURL_MODULES } from "../assets/data";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
+import { useSelector } from "react-redux";
 
 const AddCours = () => {
+  const { user } = useSelector((state) => state.user);
+
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
@@ -77,8 +80,6 @@ const AddCours = () => {
     if (file.type.includes("image") || file.type.includes("pdf")) {
       reader.readAsDataURL(file);
     } else if (file.type.includes("video")) {
-      // For video files, we'll store the file object temporarily
-      // and handle upload differently if needed
       setCourseData((prev) => ({
         ...prev,
         contenu: file,
@@ -143,18 +144,14 @@ const AddCours = () => {
         formData = courseData;
       }
 
-      console.log("courseData:", courseData);
-      console.log("formData:", formData);
-
-      // Now make the API call
       const { data } = await axios.post(serverURL_COURSES, formData, {
         headers: {
-          // Important: DO NOT set Content-Type for FormData to let browser set it with boundary
           "Content-Type":
             courseData.formatContenu === "video" &&
             courseData.contenu instanceof File
-              ? undefined // Let Axios set the proper multipart boundary
+              ? undefined
               : "application/json",
+          Authorization: `Bearer ${user?.token}`,
         },
       });
 
@@ -183,7 +180,12 @@ const AddCours = () => {
   const fetchModules = async () => {
     setIsLoadingModules(true);
     try {
-      const { data } = await axios.get(serverURL_MODULES);
+      const { data } = await axios.get(serverURL_MODULES, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
       setModules(data?.data || []);
     } catch (error) {
       toast.error("Impossible de charger les modules", {

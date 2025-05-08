@@ -23,6 +23,7 @@ import {
 
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import LoadingPage from "../components/LoadingPage";
+import { useSelector } from "react-redux";
 
 function getEmbeddableUrl(url) {
   if (!url) return "";
@@ -45,6 +46,7 @@ function getEmbeddableUrl(url) {
 
 const CoursDetails = () => {
   const { id } = useParams();
+  const { user } = useSelector((state) => state.user);
 
   const [loadingPage, setLoadingPage] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -60,11 +62,14 @@ const CoursDetails = () => {
     setLoading(true);
     setLoadingPage(true);
     try {
-      const { data } = await axios.get(`${serverURL_COURSES}/${id}`);
+      const { data } = await axios.get(`${serverURL_COURSES}/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
       setCours(data.data);
-      console.log(" fetchCours ~ data.data:", data.data);
     } catch (error) {
-      console.log("useEffect ~ error:", error);
       toast.error("Erreur lors du chargement de cours", {
         description: error?.response?.data?.message || "",
         action: { label: "✖️" },
@@ -78,9 +83,18 @@ const CoursDetails = () => {
   const handlePublish = async () => {
     setPublishing(true);
     try {
-      await axios.patch(`${serverURL_COURSES}/${id}`, {
-        statut: "Publié",
-      });
+      await axios.patch(
+        `${serverURL_COURSES}/${id}`,
+        {
+          statut: "Publié",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+        }
+      );
       toast.success("Cours publié avec succès", {
         action: { label: "✓" },
       });
