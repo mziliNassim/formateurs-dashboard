@@ -1,7 +1,8 @@
-import { Loader2, BookOpen } from "lucide-react";
+import { Loader2, BookOpen, Grid2X2, List, Table } from "lucide-react";
 import { CourseCard } from "./CourseCard";
+import CourseTable from "./CourseTable"; // We'll create this
 
-const CourseList = ({ loadingCourses, filteredCourses }) => {
+const CourseList = ({ loadingCourses, filteredCourses, viewMode }) => {
   if (loadingCourses) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -28,10 +29,16 @@ const CourseList = ({ loadingCourses, filteredCourses }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {filteredCourses.map((course) => (
-        <CourseCard key={course._id} course={course} />
-      ))}
+    <div className="mt-4">
+      {viewMode === "grid" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredCourses.map((course) => (
+            <CourseCard key={course._id} course={course} />
+          ))}
+        </div>
+      )}
+
+      {viewMode === "table" && <CourseTable courses={filteredCourses} />}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 const Activities = require("../models/Activities");
 const Cours = require("../models/Cours");
 const mongoose = require("mongoose");
+const Module = require("../models/Module");
 
 const getAllCourses = async (req, res) => {
   try {
@@ -89,6 +90,7 @@ const getCourse = async (req, res) => {
     res.status(200).json({
       success: true,
       data: course,
+      message: "Cours récupéré avec succès",
     });
   } catch (error) {
     res.status(500).json({
@@ -101,6 +103,7 @@ const getCourse = async (req, res) => {
 
 const addCourse = async (req, res) => {
   try {
+    console.log(" addCourse ~ req.body:", req.body);
     const {
       titre,
       description,
@@ -114,6 +117,13 @@ const addCourse = async (req, res) => {
     } = req.body;
 
     // Check for required module
+    if (!module) {
+      return res.status(400).json({
+        success: false,
+        message: "Le module est obligatoire",
+      });
+    }
+
     if (module && !mongoose.Types.ObjectId.isValid(module)) {
       return res.status(400).json({
         success: false,
@@ -134,6 +144,8 @@ const addCourse = async (req, res) => {
       tags: Array.isArray(tags) ? tags : tags ? [tags] : [],
     });
 
+    const savedCourse = await newCourse.save();
+
     // Handle activity action
     const activite = new Activities({
       title: "Création d'un cours",
@@ -141,8 +153,12 @@ const addCourse = async (req, res) => {
       type: "Create",
     });
 
-    const savedCourse = await newCourse.save();
     await activite.save();
+
+    // add cours ID to module
+    await Module.findByIdAndUpdate(module, {
+      $push: { cours: savedCourse._id },
+    });
 
     res.status(201).json({
       success: true,
@@ -158,7 +174,7 @@ const addCourse = async (req, res) => {
       });
     }
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Impossible de créer le cours",
       error: error.message,
@@ -207,6 +223,15 @@ const updateCourse = async (req, res) => {
       });
     }
 
+    // Update cours ID to module
+    await Module.findByIdAndUpdate(updatedCourse.module, {
+      $pull: { cours: updatedCourse._id },
+    });
+
+    await Module.findByIdAndUpdate(updatedCourse.module, {
+      $push: { cours: updatedCourse._id },
+    });
+
     res.status(200).json({
       success: true,
       message: "Cours mis à jour avec succès",
@@ -248,6 +273,11 @@ const deleteCourse = async (req, res) => {
         message: "Cours non trouvé",
       });
     }
+
+    // delete cours ID to module
+    await Module.findByIdAndUpdate(deletedCourse.module, {
+      $pull: { cours: deletedCourse._id },
+    });
 
     res.status(200).json({
       success: true,

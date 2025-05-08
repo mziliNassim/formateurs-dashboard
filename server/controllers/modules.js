@@ -1,6 +1,7 @@
 const Module = require("../models/Module");
 const Cours = require("../models/Cours");
 const mongoose = require("mongoose");
+const Activities = require("../models/Activities");
 
 const getAllModules = async (req, res) => {
   try {
@@ -121,6 +122,19 @@ const addModule = async (req, res) => {
     });
 
     const savedModule = await newModule.save();
+    if (!savedModule) {
+      return res.status(500).json({
+        success: false,
+        message: "Impossible de créer le module",
+        data: null,
+      });
+    }
+
+    await new Activities({
+      title: "Nouveau module créé",
+      description: titre,
+      type: "Create",
+    }).save();
 
     return res.status(201).json({
       success: true,
@@ -167,12 +181,20 @@ const updateModule = async (req, res) => {
       { new: true, runValidators: true }
     );
 
+    console.log(" updateModule ~ updatedModule:", updatedModule);
+
     if (!updatedModule) {
       return res.status(404).json({
         success: false,
         message: "Module non trouvé",
       });
     }
+
+    await new Activities({
+      title: "Module mis à jour",
+      description: updatedModule.titre,
+      type: "Update",
+    }).save();
 
     return res.status(200).json({
       success: true,
@@ -238,6 +260,12 @@ const deleteModule = async (req, res) => {
 
       await session.commitTransaction();
       session.endSession();
+
+      await new Activities({
+        title: "Module supprimé",
+        description: `Module : ${deletedModule.titre}`,
+        type: "Delete",
+      }).save();
 
       return res.status(200).json({
         success: true,

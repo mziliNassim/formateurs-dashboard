@@ -9,11 +9,12 @@ const {
   logout,
   forgotPassword,
   resetPassword,
+  getUserInfobyToken,
 } = require("../controllers/auth.js");
 
 // ! ========== Token Validation ==========
 // @desc
-// @route   get /api/users/validToken
+// @route   get /api/auth/validToken/:token
 // @access  Public
 router.get("/validToken/:token", tokenAuthorize);
 
@@ -42,5 +43,10 @@ router.post("/forgot-password", forgotPassword);
 // @route   POST /api/auth/reset-password/:token
 // @access  Public
 router.post("/reset-password/:token", resetPassword);
+
+// @desc    Get User Infos
+// @route   POST /api/auth/infos
+// @access  Public
+router.get("/infos", authenticate, getUserInfobyToken);
 
 module.exports = router;

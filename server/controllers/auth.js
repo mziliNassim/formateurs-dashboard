@@ -210,4 +210,35 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { register, login, logout, forgotPassword, resetPassword };
+const getUserInfobyToken = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+        data: null,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User information",
+      data: user,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, message: error.message, data: null });
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  logout,
+  forgotPassword,
+  resetPassword,
+  getUserInfobyToken,
+};

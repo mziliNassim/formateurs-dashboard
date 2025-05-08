@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useParams, useNavigate } from "react-router-dom";
 import Editor from "react-simple-wysiwyg";
+import axios from "axios";
 import { toast } from "sonner";
 import {
   BookOpen,
@@ -24,15 +24,18 @@ import {
 
 import { serverURL_COURSES, serverURL_MODULES } from "../assets/data";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
+import LoadingPage from "../components/LoadingPage";
 
-const AddCours = () => {
+const CoursUpdate = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [loadingPage, setLoadingPage] = useState(true);
   const [activeStep, setActiveStep] = useState(1);
   const [courseData, setCourseData] = useState({
-    titre: "Cours 1",
-    description: "<p>Décrivez le contenu et les objectifs de ce cours...</p>",
-    formatContenu: "texte",
+    titre: "",
+    description: "",
+    formatContenu: "video",
     contenu: "",
     duree: 30,
     ordrePublication: 1,
@@ -52,6 +55,52 @@ const AddCours = () => {
     { value: "pdf", label: "PDF", icon: <FileIcon className="w-5 h-5" /> },
   ];
 
+  useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        const { data } = await axios.get(`${serverURL_COURSES}/${id}`);
+        if (data.success) {
+          setCourseData({
+            titre: data.data.titre,
+            description: data.data.description,
+            formatContenu: data.data.formatContenu,
+            contenu: data.data.contenu,
+            duree: data.data.duree,
+            ordrePublication: data.data.ordrePublication,
+            module: data.data.module?._id || "",
+            statut: data.data.statut,
+            tags: data.data.tags || [],
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching course:", error);
+        toast.error("Erreur lors du chargement du cours", {
+          action: { label: "✖️" },
+        });
+        navigate("/dashboard");
+      } finally {
+        setLoadingPage(false);
+      }
+    };
+
+    const fetchModules = async () => {
+      setIsLoadingModules(true);
+      try {
+        const { data } = await axios.get(serverURL_MODULES);
+        setModules(data?.data || []);
+      } catch (error) {
+        toast.error("Impossible de charger les modules", {
+          action: { label: "✖️" },
+        });
+      } finally {
+        setIsLoadingModules(false);
+      }
+    };
+
+    fetchCourse();
+    fetchModules();
+  }, [id, navigate]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCourseData((prev) => ({
@@ -59,32 +108,6 @@ const AddCours = () => {
       [name]: value,
     }));
     setFormTouched(true);
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setCourseData((prev) => ({
-        ...prev,
-        contenu: event.target.result, // This will be the base64 string
-      }));
-      setFormTouched(true);
-    };
-
-    if (file.type.includes("image") || file.type.includes("pdf")) {
-      reader.readAsDataURL(file);
-    } else if (file.type.includes("video")) {
-      // For video files, we'll store the file object temporarily
-      // and handle upload differently if needed
-      setCourseData((prev) => ({
-        ...prev,
-        contenu: file,
-      }));
-      setFormTouched(true);
-    }
   };
 
   const handleTagAdd = () => {
@@ -106,72 +129,30 @@ const AddCours = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
-      setLoading(true);
+      const response = await axios.put(
+        `${serverURL_COURSES}/${id}`,
+        courseData
+      );
 
-      // Prepare form data based on content type
-      let formData;
-
-      if (
-        courseData.formatContenu === "video" &&
-        courseData.contenu instanceof File
-      ) {
-        // For video files, use FormData
-        formData = new FormData();
-
-        // Add the video file
-        formData.append("video", courseData.contenu);
-
-        // Append all other fields (except contenu which we've handled separately)
-        Object.keys(courseData).forEach((key) => {
-          if (key !== "contenu") {
-            // Handle special cases for objects and arrays
-            if (
-              typeof courseData[key] === "object" &&
-              courseData[key] !== null &&
-              !(courseData[key] instanceof File)
-            ) {
-              formData.append(key, JSON.stringify(courseData[key]));
-            } else {
-              formData.append(key, courseData[key]);
-            }
-          }
+      if (response.data.success) {
+        toast.success("Cours mis à jour avec succès", {
+          action: { label: "✖️" },
         });
-        formData = courseData;
-      } else {
-        // For other formats, send as JSON with base64 content
-        formData = courseData;
-      }
-
-      console.log("courseData:", courseData);
-      console.log("formData:", formData);
-
-      // Now make the API call
-      const { data } = await axios.post(serverURL_COURSES, formData, {
-        headers: {
-          // Important: DO NOT set Content-Type for FormData to let browser set it with boundary
-          "Content-Type":
-            courseData.formatContenu === "video" &&
-            courseData.contenu instanceof File
-              ? undefined // Let Axios set the proper multipart boundary
-              : "application/json",
-        },
-      });
-
-      if (data.success) {
-        toast.success("Cours créé avec succès", { action: { label: "✖️" } });
         navigate("/dashboard");
       } else {
-        toast.error("Erreur lors de la création du cours", {
+        toast.error("Erreur lors de la mise à jour du cours", {
           action: { label: "✖️" },
         });
       }
     } catch (error) {
-      console.error("handleSubmit error:", error);
+      console.error("Error updating course:", error);
       if (error.response?.data?.message) {
         toast.error(error.response.data.message, { action: { label: "✖️" } });
       } else {
-        toast.error("Une erreur est survenue lors de la création du cours", {
+        toast.error("Une erreur est survenue lors de la mise à jour du cours", {
           action: { label: "✖️" },
         });
       }
@@ -180,25 +161,6 @@ const AddCours = () => {
     }
   };
 
-  const fetchModules = async () => {
-    setIsLoadingModules(true);
-    try {
-      const { data } = await axios.get(serverURL_MODULES);
-      setModules(data?.data || []);
-    } catch (error) {
-      toast.error("Impossible de charger les modules", {
-        action: { label: "✖️" },
-      });
-    } finally {
-      setIsLoadingModules(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchModules();
-  }, []);
-
-  // Calculate progress percentage
   const calculateProgress = () => {
     let filledFields = 0;
     let totalRequiredFields = 6; // titre, description, formatContenu, contenu, duree, ordrePublication
@@ -214,6 +176,8 @@ const AddCours = () => {
   };
 
   const progress = calculateProgress();
+
+  if (loadingPage) return <LoadingPage />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
@@ -232,10 +196,10 @@ const AddCours = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-                Création d'un cours
+                Modification du cours
               </h1>
               <p className="text-gray-600 dark:text-gray-300 mt-1">
-                Remplissez les informations pour créer votre nouveau cours
+                Modifiez les informations de votre cours
               </p>
             </div>
           </div>
@@ -357,7 +321,7 @@ const AddCours = () => {
                   Informations générales
                 </h2>
                 <p className="text-gray-500 dark:text-gray-400">
-                  Définissez les caractéristiques principales de votre cours
+                  Modifiez les caractéristiques principales de votre cours
                 </p>
               </div>
 
@@ -394,18 +358,14 @@ const AddCours = () => {
                   name="description"
                   value={courseData.description}
                   onChange={handleChange}
-                  className="w-full min-h-[200px] px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
+                  className="w-full min-h-[300px] px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                   placeholder="Décrivez le contenu et les objectifs de ce cours..."
                 />
+
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                   Une bonne description aide les étudiants à comprendre ce
                   qu'ils vont apprendre
                 </p>
-                {/* WYSIWYG */}
-                {/* <RichTextEditorDemo
-                  setCourseData={setCourseData}
-                  courseData={courseData}
-                /> */}
               </div>
 
               {/* Tags */}
@@ -490,7 +450,7 @@ const AddCours = () => {
                   Contenu du cours
                 </h2>
                 <p className="text-gray-500 dark:text-gray-400">
-                  Définissez le type et le contenu de votre cours
+                  Modifiez le type et le contenu de votre cours
                 </p>
               </div>
 
@@ -506,7 +466,7 @@ const AddCours = () => {
                       onClick={() =>
                         setCourseData((prev) => ({
                           ...prev,
-                          formatContenu: format.value, // ["pdf", "image", "video", "text"]
+                          formatContenu: format.value,
                         }))
                       }
                       className={`flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 ${
@@ -558,7 +518,7 @@ const AddCours = () => {
                   {courseData.formatContenu === "video" && "Lien de la vidéo"}
                   {courseData.formatContenu === "texte" && "Contenu textuel"}
                   {courseData.formatContenu === "image" && "URL de l'image"}
-                  {courseData.formatContenu === "pdf" && "Fichier PDF"} *
+                  {courseData.formatContenu === "pdf" && "Lien du PDF"} *
                 </label>
                 {courseData.formatContenu === "texte" ? (
                   <textarea
@@ -571,149 +531,35 @@ const AddCours = () => {
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                     placeholder="Entrez le contenu détaillé de votre cours..."
                   />
-                ) : courseData.formatContenu === "video" ? (
-                  <div className="space-y-4">
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Video className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="text"
-                        id="videoUrl"
-                        name="videoUrl"
-                        value={
-                          typeof courseData.contenu === "string"
-                            ? courseData.contenu
-                            : ""
-                        }
-                        onChange={(e) =>
-                          setCourseData((prev) => ({
-                            ...prev,
-                            contenu: e.target.value,
-                          }))
-                        }
-                        className="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
-                        placeholder="https://example.com/video.mp4"
-                      />
-                    </div>
-                    <div className="text-center text-gray-500 dark:text-gray-400">
-                      OU
-                    </div>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        id="videoFile"
-                        name="videoFile"
-                        onChange={handleFileChange}
-                        accept="video/*"
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-gray-600 dark:file:text-white dark:hover:file:bg-gray-500"
-                      />
-                      {courseData.contenu instanceof File && (
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                          Fichier sélectionné: {courseData.contenu.name}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ) : courseData.formatContenu === "image" ? (
-                  <div className="space-y-4">
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <ImageIcon className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="text"
-                        id="imageUrl"
-                        name="imageUrl"
-                        value={
-                          typeof courseData.contenu === "string"
-                            ? courseData.contenu
-                            : ""
-                        }
-                        onChange={(e) =>
-                          setCourseData((prev) => ({
-                            ...prev,
-                            contenu: e.target.value,
-                          }))
-                        }
-                        className="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
-                        placeholder="https://example.com/image.jpg"
-                      />
-                    </div>
-                    <div className="text-center text-gray-500 dark:text-gray-400">
-                      OU
-                    </div>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        id="imageFile"
-                        name="imageFile"
-                        onChange={handleFileChange}
-                        accept="image/*"
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-gray-600 dark:file:text-white dark:hover:file:bg-gray-500"
-                      />
-                      {courseData.contenu &&
-                        typeof courseData.contenu === "string" &&
-                        courseData.contenu.startsWith("data:image") && (
-                          <div className="mt-4">
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                              Aperçu:
-                            </p>
-                            <img
-                              src={courseData.contenu}
-                              alt="Preview"
-                              className="max-h-40 rounded-lg border border-gray-200 dark:border-gray-600"
-                            />
-                          </div>
-                        )}
-                    </div>
-                  </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <FileText className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="text"
-                        id="pdfUrl"
-                        name="pdfUrl"
-                        value={
-                          typeof courseData.contenu === "string" &&
-                          !courseData.contenu.startsWith("data:")
-                            ? courseData.contenu
-                            : ""
-                        }
-                        onChange={(e) =>
-                          setCourseData((prev) => ({
-                            ...prev,
-                            contenu: e.target.value,
-                          }))
-                        }
-                        className="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
-                        placeholder="https://example.com/document.pdf"
-                      />
-                    </div>
-
-                    <div className="text-center text-gray-500 dark:text-gray-400">
-                      OU
-                    </div>
-
-                    <div className="relative">
-                      <input
-                        type="file"
-                        id="pdfFile"
-                        name="pdfFile"
-                        onChange={handleFileChange}
-                        accept=".pdf"
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-gray-600 dark:file:text-white dark:hover:file:bg-gray-500"
-                      />
-                      {courseData.contenu instanceof File && (
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                          Fichier sélectionné : {courseData.contenu.name}
-                        </p>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      {courseData.formatContenu === "video" && (
+                        <Video className="h-5 w-5 text-gray-400" />
+                      )}
+                      {courseData.formatContenu === "image" && (
+                        <ImageIcon className="h-5 w-5 text-gray-400" />
+                      )}
+                      {courseData.formatContenu === "pdf" && (
+                        <FileIcon className="h-5 w-5 text-gray-400" />
                       )}
                     </div>
+                    <input
+                      type="text"
+                      id="contenu"
+                      name="contenu"
+                      value={courseData.contenu}
+                      onChange={handleChange}
+                      required
+                      className="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
+                      placeholder={
+                        courseData.formatContenu === "video"
+                          ? "https://example.com/video.mp4"
+                          : courseData.formatContenu === "image"
+                          ? "https://example.com/image.jpg"
+                          : "https://example.com/document.pdf"
+                      }
+                    />
                   </div>
                 )}
 
@@ -752,7 +598,7 @@ const AddCours = () => {
                   Organisation et paramètres
                 </h2>
                 <p className="text-gray-500 dark:text-gray-400">
-                  Définissez comment votre cours sera organisé et publié
+                  Modifiez comment votre cours sera organisé et publié
                 </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -910,20 +756,7 @@ const AddCours = () => {
                 <div className="flex gap-4">
                   <button
                     type="button"
-                    onClick={() => {
-                      setCourseData({
-                        titre: "",
-                        description: "",
-                        formatContenu: "video",
-                        contenu: "",
-                        duree: 30,
-                        ordrePublication: 1,
-                        module: "",
-                        statut: "Brouillon",
-                        tags: [],
-                      });
-                      setActiveStep(1);
-                    }}
+                    onClick={() => navigate("/dashboard")}
                     className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 transition-all duration-200"
                   >
                     Annuler
@@ -941,7 +774,7 @@ const AddCours = () => {
                     ) : (
                       <>
                         <Save className="w-4 h-4 mr-2" />
-                        Enregistrer le cours
+                        Mettre à jour le cours
                       </>
                     )}
                   </button>
@@ -955,4 +788,4 @@ const AddCours = () => {
   );
 };
 
-export default AddCours;
+export default CoursUpdate;

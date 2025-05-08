@@ -129,7 +129,9 @@ const ModulesSection = () => {
 
         if (data.success) {
           setModules([...modules, data.data]);
-          toast.success("Module created successfully");
+          toast.success("Module created successfully", {
+            action: { label: "✖️" },
+          });
         }
       }
 
@@ -138,6 +140,7 @@ const ModulesSection = () => {
     } catch (err) {
       toast.error("Error saving module", {
         description: err.response?.data?.message || err.message,
+        action: { label: "✖️" },
       });
     }
   };
@@ -160,11 +163,15 @@ const ModulesSection = () => {
 
       if (data.success) {
         setModules(modules.filter((m) => m._id !== id));
-        toast.success("Module deleted successfully");
+        // alert success
+        toast.success("Module deleted successfully", {
+          action: { label: "✖️" },
+        });
       }
     } catch (err) {
       toast.error("Error deleting module", {
         description: err.response?.data?.message || err.message,
+        action: { label: "✖️" },
       });
     }
   };

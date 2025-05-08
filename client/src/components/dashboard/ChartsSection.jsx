@@ -9,15 +9,11 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  AreaChart,
-  Area,
   CartesianGrid,
 } from "recharts";
 import {
   PieChart as PieChartIcon,
   BarChart as BarChartIcon,
-  LineChart as LineChartIcon,
-  Layers,
 } from "lucide-react";
 
 const CHART_COLORS = [
@@ -34,7 +30,9 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
       <div className="p-2 bg-white dark:bg-gray-800 shadow-lg rounded-md border border-gray-200 dark:border-gray-700">
-        <p className="text-sm font-medium">{`${label}: ${payload[0].value}`}</p>
+        <p className="text-sm font-medium">
+          {label ? `${label}: ${payload[0].value}` : payload[0].value}
+        </p>
       </div>
     );
   }
@@ -42,7 +40,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const ChartsSection = ({ stats }) => (
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
     {/* Format Distribution Chart */}
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 overflow-hidden">
       <div className="flex justify-between items-center mb-4">

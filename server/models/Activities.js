@@ -12,13 +12,13 @@ const activitySchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["Create", "Update", "Delete", "Publication", "Modification"],
+    enum: ["Create", "Update", "Delete"],
     required: [true, "Le type d'activité est obligatoire"],
   },
   createdAt: {
     type: Date,
     default: Date.now,
-    index: { expires: 259200 },
+    index: { expires: 259200 }, // 3 days in seconds
   },
 });
 

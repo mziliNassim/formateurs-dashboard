@@ -18,6 +18,7 @@ app.use("/", require("./routes/endpoint.js"));
 app.use("/api/auth", require("./routes/auth.js"));
 app.use("/api/courses", require("./routes/courses.js"));
 app.use("/api/modules", require("./routes/modules.js"));
+app.use("/api/activities", require("./routes/activities.js"));
 
 // Database connection and serverless function export
 const startServer = async () => {

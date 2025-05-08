@@ -30,7 +30,11 @@ const coursSchema = new mongoose.Schema({
     type: Number,
     required: [true, "L'ordre de publication est obligatoire"],
   },
-  module: { type: mongoose.Schema.Types.ObjectId, ref: "Module" },
+  module: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: [true, "Le module est obligatoire"],
+    ref: "Module",
+  },
   statut: { type: String, default: "Brouillon", enum: ["Brouillon", "Publié"] },
   tags: [{ type: String, trim: true }],
   createdAt: { type: Date, default: Date.now },

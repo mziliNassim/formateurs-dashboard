@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { BookOpen, Layers, Users, Calendar, FilePlus2 } from "lucide-react";
+import { BookOpen, FilePlus2 } from "lucide-react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -15,10 +16,15 @@ import PlaceholderSection from "../components/dashboard/PlaceholderSection.jsx";
 import ModulesSection from "../components/dashboard/ModulesSection.jsx";
 
 import { serverURL_COURSES, serverURL_MODULES } from "../assets/data";
+import LoadingPage from "../components/LoadingPage.jsx";
+import { useSelector } from "react-redux";
 
 const Dashboard = () => {
-  const [courses, setCourses] = useState([]);
+  const { user } = useSelector((state) => state.user);
+  const [loadingPage, setLoadingPage] = useState(true);
   const [loadingCourses, setLoadingCourses] = useState(false);
+
+  const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterFormat, setFilterFormat] = useState("");
@@ -34,11 +40,31 @@ const Dashboard = () => {
     moduleData: [],
   });
   const [activeTab, setActiveTab] = useState("overview");
+  const [viewMode, setViewMode] = useState("table"); // 'grid' or 'table'
+
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) return navigate("/auth");
+  }, []);
+
+  // set active tab
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "courses" || tab === "modules") {
+      setActiveTab(tab);
+      return;
+    }
+    setActiveTab("overview");
+  }, [searchParams, location]);
 
   // Fetch courses from API
   useEffect(() => {
     const fetchCourses = async () => {
       try {
+        setLoadingPage(true);
         setLoadingCourses(true);
         const { data } = await axios.get(
           `${serverURL_COURSES}?page=${currentPage}&sortBy=ordrePublication&order=${sortOrder}`
@@ -50,16 +76,20 @@ const Dashboard = () => {
           setTotalPages(data.totalPages);
           calculateStats(data.data, data.total);
         } else {
-          toast.error("Erreur lors du chargement des cours");
+          toast.error("Erreur lors du chargement des cours", {
+            action: { label: "✖️" },
+          });
         }
       } catch (error) {
-        toast.error(error.message, {
+        toast.error("Erreur lors du chargement des cours", {
+          description: error?.response?.data?.message || "",
           action: {
             label: "Réessayer",
             onClick: () => setRefreshKey((prev) => prev + 1),
           },
         });
       } finally {
+        setLoadingPage(false);
         setLoadingCourses(false);
       }
     };
@@ -166,7 +196,7 @@ const Dashboard = () => {
   // Handle refresh data
   const refreshData = () => {
     setRefreshKey((prev) => prev + 1);
-    toast.success("Données actualisées");
+    toast.success("Données actualisées", { action: { label: "✖️" } });
   };
 
   // Render content based on active tab
@@ -177,10 +207,10 @@ const Dashboard = () => {
           <>
             <StatsCards courses={courses} />
             <ChartsSection stats={stats} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="flex flex-col lg:flex-row justify-between gap-6 mb-8">
               <RecentActivity />
 
-              <div className="space-y-6">
+              <div className="w-full min-h-[320px]">
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                   <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
@@ -189,7 +219,7 @@ const Dashboard = () => {
                     </h3>
                   </div>
                   <div className="p-6">
-                    {courses.slice(0, 3).map((course, i) => (
+                    {courses.slice(0, 4).map((course, i) => (
                       <div
                         key={i}
                         className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0"
@@ -224,10 +254,13 @@ const Dashboard = () => {
               sortOrder={sortOrder}
               toggleSortOrder={toggleSortOrder}
               refreshData={refreshData}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
             />
             <CourseList
               loadingCourses={loadingCourses}
               filteredCourses={filteredCourses}
+              viewMode={viewMode}
             />
             {filteredCourses.length > 0 && (
               <Pagination
@@ -240,19 +273,12 @@ const Dashboard = () => {
         );
       case "modules":
         return <ModulesSection />;
-      case "users":
-        return (
-          <PlaceholderSection
-            icon={Users}
-            title="Gestion des utilisateurs"
-            description="Cette section vous permettra de gérer les utilisateurs de la plateforme."
-            buttonText="Ajouter un utilisateur"
-          />
-        );
       default:
         return null;
     }
   };
+
+  if (loadingPage) return <LoadingPage />;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
