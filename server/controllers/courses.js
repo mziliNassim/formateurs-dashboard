@@ -371,6 +371,44 @@ const reorderCourses = async (req, res) => {
   }
 };
 
+const publierCours = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "ID de cours invalide",
+      });
+    }
+
+    const course = await Cours.findByIdAndUpdate(
+      id,
+      { statut: "Publié" },
+      { new: true, runValidators: true }
+    );
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Cours non trouvé",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Cours publié avec succès",
+      data: course,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Impossible de publier le cours",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getAllCourses,
   getCourse,
@@ -379,4 +417,5 @@ module.exports = {
   deleteCourse,
   getCoursesByModule,
   reorderCourses,
+  publierCours,
 };

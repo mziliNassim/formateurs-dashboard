@@ -25,7 +25,7 @@ const authenticate = async (req, res, next) => {
     const user = await User.findOne({ _id: decoded.id });
 
     if (!user) throw new Error("user not found or inactive");
-    
+
     req.token = token;
     req.user = user;
     next();

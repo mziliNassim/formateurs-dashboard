@@ -4,12 +4,11 @@ const router = Router();
 const { tokenAuthorize, authenticate } = require("../middleware/auth.js"); // JWT Token Verification Middleware for protected routes
 
 const {
-  register,
   login,
   logout,
-  forgotPassword,
-  resetPassword,
   getUserInfobyToken,
+  updateProfile,
+  updatePassword,
 } = require("../controllers/auth.js");
 
 // ! ========== Token Validation ==========
@@ -19,11 +18,6 @@ const {
 router.get("/validToken/:token", tokenAuthorize);
 
 // ! ========== Authentification ==========
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
-router.post("/register", register);
-
 // @desc    Login a user
 // @route   POST /api/auth/login
 // @access  Public
@@ -34,19 +28,15 @@ router.post("/login", login);
 // @access  Formateur
 router.post("/logout", authenticate, logout);
 
-// @desc
-// @route   POST /api/auth/forgot-password
-// @access  Public
-router.post("/forgot-password", forgotPassword);
-
-// @desc
-// @route   POST /api/auth/reset-password/:token
-// @access  Public
-router.post("/reset-password/:token", resetPassword);
-
 // @desc    Get User Infos
 // @route   POST /api/auth/infos
-// @access  Public
+// @access  formateur
 router.get("/infos", authenticate, getUserInfobyToken);
+
+// @desc    Update Profile Infos
+// @route   PUT /api/auth/infos
+// @access  formateur
+router.put("/profile", authenticate, updateProfile);
+router.put("/password", authenticate, updatePassword);
 
 module.exports = router;

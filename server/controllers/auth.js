@@ -234,6 +234,106 @@ const getUserInfobyToken = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+        data: null,
+      });
+    }
+
+    const allowedUpdates = [
+      "profilePic",
+      "fName",
+      "lName",
+      "email",
+      "adresse",
+      "socials",
+    ];
+    const updates = req.body;
+    const updateKeys = Object.keys(updates);
+
+    const isValidOperation = updateKeys.every((key) =>
+      allowedUpdates.includes(key)
+    );
+    if (!isValidOperation) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid updates!",
+        data: null,
+      });
+    }
+
+    // Apply updates
+    updateKeys.forEach((key) => {
+      user[key] = updates[key];
+    });
+
+    // Validate if email is changed
+    if (updates.email && updates.email !== user.email) {
+      await user.validEmail(updates.email);
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: null,
+    });
+  } catch (error) {
+    console.log("updateProfile ~ error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
+const updatePassword = async (req, res) => {
+  try {
+    const user = req.user; // From auth middleware
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+        data: null,
+      });
+    }
+
+    // Check password length
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 8 characters",
+        data: null,
+      });
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+      data: null,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -241,4 +341,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   getUserInfobyToken,
+  updateProfile,
+  updatePassword,
 };

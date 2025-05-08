@@ -9,6 +9,7 @@
 /server/coverage
 /server/logs
 /server/src/**/*.test.ts
+/server/.netlify
 
 /client/node_modules
 /client/.env
@@ -23,3 +24,5 @@
 
 
 code.jsx
+# Local Netlify folder
+.netlify
