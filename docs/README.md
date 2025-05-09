@@ -77,3 +77,9 @@ NODEMAILER_PASSWORD = NodeMailer_user_password
 
 CLIENT_URL = http://localhost:5173/
 ```
+
+Créez un fichier `.env` dans le dossier client avec les variables suivantes :
+
+```
+VITE_SERVER_URL= your-backend-url or http://localhost:8888/api
+```

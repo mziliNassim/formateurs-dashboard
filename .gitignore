@@ -26,3 +26,5 @@
 code.jsx
 # Local Netlify folder
 .netlify
+
+.git
