@@ -1,5 +1,4 @@
 const express = require("express");
-// const serverless = require("serverless-http");
 const cors = require("cors");
 const dotenv = require("dotenv");
 
@@ -21,26 +20,6 @@ app.use("/api/users", require("./routes/users.js"));
 app.use("/api/courses", require("./routes/courses.js"));
 app.use("/api/modules", require("./routes/modules.js"));
 app.use("/api/activities", require("./routes/activities.js"));
-
-// Database connection and serverless function export
-// let isDatabaseConnected = false;
-// const handler = async (req, res) => {
-//   if (!isDatabaseConnected) {
-//     try {
-//       await connectDB();
-//       isDatabaseConnected = true;
-//       console.log("Database connected successfully!");
-//     } catch (err) {
-//       console.error("Database connection error:", err);
-//       return res.status(500).send("Database connection failed");
-//     }
-//   }
-
-//   // Pass the request to the Express app
-//   return app(req, res);
-// };
-
-// module.exports.handler = serverless(handler);
 
 // Database connection and serverless function export
 const startServer = async () => {

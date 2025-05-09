@@ -47,9 +47,9 @@ const Formateurs = () => {
           },
         });
         setUsers(data?.data);
-        toast.success("Utilisateurs chargés avec succès !");
+        // toast.success("Utilisateurs chargés avec succès !");
       } catch (error) {
-        console.error("useEffect ~ error:", error);
+        // console.error("useEffect ~ error:", error);
         toast.error("Erreur lors du chargement des utilisateurs !");
       } finally {
         setLoading(false);
@@ -79,7 +79,7 @@ const Formateurs = () => {
         setUsers(users.filter((user) => user._id !== id));
         toast.success("Formateur supprimé avec succès !");
       } catch (error) {
-        console.log("Delete error:", error);
+        // console.log("Delete error:", error);
         toast.error("Erreur lors de la suppression du formateur");
       }
     }
@@ -197,116 +197,111 @@ const Formateurs = () => {
                   {users?.map((formateur) => {
                     if (formateur?._id !== user?._id)
                       return (
-                        <>
-                          <div
-                            key={formateur._id}
-                            className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group"
-                          >
-                            <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-4 flex justify-center relative">
-                              <span
-                                className={`absolute top-3 right-3 px-2 py-1 text-xs font-medium rounded-full ${
-                                  formateur.active
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {formateur.active ? "Actif" : "Inactif"}
-                              </span>
-                              {formateur.profilePic ? (
-                                <img
-                                  src={formateur.profilePic}
-                                  alt={`${formateur.fName} ${formateur.lName}`}
-                                  className="w-24 h-24 rounded-full object-cover border-4 border-white"
-                                />
-                              ) : (
-                                <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center text-2xl font-bold text-indigo-600">
-                                  {getInitials(
-                                    formateur.fName,
-                                    formateur.lName
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                            <div className="p-6 h-full">
-                              <div className="space-y-3 text-sm">
-                                <h3 className="font-semibold text-xl text-center text-gray-800 mb-3">
-                                  {formateur.fName} {formateur.lName}
-                                </h3>
+                        <div
+                          key={formateur._id}
+                          className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group"
+                        >
+                          <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-4 flex justify-center relative">
+                            <span
+                              className={`absolute top-3 right-3 px-2 py-1 text-xs font-medium rounded-full ${
+                                formateur.active
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {formateur.active ? "Actif" : "Inactif"}
+                            </span>
+                            {formateur.profilePic ? (
+                              <img
+                                src={formateur.profilePic}
+                                alt={`${formateur.fName} ${formateur.lName}`}
+                                className="w-24 h-24 rounded-full object-cover border-4 border-white"
+                              />
+                            ) : (
+                              <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center text-2xl font-bold text-indigo-600">
+                                {getInitials(formateur.fName, formateur.lName)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-6 h-full">
+                            <div className="space-y-3 text-sm">
+                              <h3 className="font-semibold text-xl text-center text-gray-800 mb-3">
+                                {formateur.fName} {formateur.lName}
+                              </h3>
+                              <div className="flex items-start">
+                                <Mail className="h-4 w-4 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
+                                <p className="text-gray-600 break-all">
+                                  {formateur.email}
+                                </p>
+                              </div>
+
+                              {formateur.adresse && (
                                 <div className="flex items-start">
-                                  <Mail className="h-4 w-4 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
-                                  <p className="text-gray-600 break-all">
-                                    {formateur.email}
+                                  <MapPin className="h-4 w-4 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
+                                  <p className="text-gray-600">
+                                    {formateur.adresse}
                                   </p>
                                 </div>
+                              )}
 
-                                {formateur.adresse && (
-                                  <div className="flex items-start">
-                                    <MapPin className="h-4 w-4 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
-                                    <p className="text-gray-600">
-                                      {formateur.adresse}
-                                    </p>
+                              {/* Social Media Links */}
+                              {formateur.socials &&
+                                Object.entries(formateur.socials).filter(
+                                  ([key, value]) =>
+                                    key !== "bio" &&
+                                    value &&
+                                    value.trim() !== ""
+                                ).length > 0 && (
+                                  <div className="flex items-center justify-center space-x-2 pt-2">
+                                    {Object.entries(formateur.socials).map(
+                                      ([platform, link]) =>
+                                        platform !== "bio" &&
+                                        link &&
+                                        link.trim() !== "" ? (
+                                          <a
+                                            key={`${formateur._id}-${platform}`}
+                                            href={
+                                              link.startsWith("http")
+                                                ? link
+                                                : `https://${link}`
+                                            }
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                                            title={platform}
+                                          >
+                                            {getSocialIcon(platform)}
+                                          </a>
+                                        ) : null
+                                    )}
                                   </div>
                                 )}
+                            </div>
 
-                                {/* Social Media Links */}
-                                {formateur.socials &&
-                                  Object.entries(formateur.socials).filter(
-                                    ([key, value]) =>
-                                      key !== "bio" &&
-                                      value &&
-                                      value.trim() !== ""
-                                  ).length > 0 && (
-                                    <div className="flex items-center justify-center space-x-2 pt-2">
-                                      {Object.entries(formateur.socials).map(
-                                        ([platform, link]) =>
-                                          platform !== "bio" &&
-                                          link &&
-                                          link.trim() !== "" ? (
-                                            <a
-                                              key={platform}
-                                              href={
-                                                link.startsWith("http")
-                                                  ? link
-                                                  : `https://${link}`
-                                              }
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-                                              title={platform}
-                                            >
-                                              {getSocialIcon(platform)}
-                                            </a>
-                                          ) : null
-                                      )}
-                                    </div>
-                                  )}
-                              </div>
-
-                              <div className="mt-6 mb-0 flex justify-center space-x-2">
-                                <button
-                                  onClick={() =>
-                                    navigate(
-                                      `/dashboard/update-formateur/${formateur._id}`
-                                    )
-                                  }
-                                  className="cursor-pointer px-3 py-1.5 flex items-center text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                                >
-                                  <Edit className="h-3.5 w-3.5 mr-1" />
-                                  Modifier
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleDeleteFormateur(formateur._id)
-                                  }
-                                  className="cursor-pointer px-3 py-1.5 flex items-center text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5 mr-1" />
-                                  Supprimer
-                                </button>
-                              </div>
+                            <div className="mt-6 mb-0 flex justify-center space-x-2">
+                              <button
+                                onClick={() =>
+                                  navigate(
+                                    `/dashboard/update-formateur/${formateur._id}`
+                                  )
+                                }
+                                className="cursor-pointer px-3 py-1.5 flex items-center text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                              >
+                                <Edit className="h-3.5 w-3.5 mr-1" />
+                                Modifier
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleDeleteFormateur(formateur._id)
+                                }
+                                className="cursor-pointer px-3 py-1.5 flex items-center text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                              >
+                                <Trash2 className="h-3.5 w-3.5 mr-1" />
+                                Supprimer
+                              </button>
                             </div>
                           </div>
-                        </>
+                        </div>
                       );
                     else return null;
                   })}
@@ -403,7 +398,7 @@ const Formateurs = () => {
                                         link &&
                                         link.trim() !== "" ? (
                                           <a
-                                            key={platform}
+                                            key={`${formateur._id}-${platform}`}
                                             href={
                                               link.startsWith("http")
                                                 ? link
@@ -445,7 +440,7 @@ const Formateurs = () => {
                                   <button
                                     onClick={() =>
                                       navigate(
-                                        `/dashboard/update-formateur//${formateur._id}`
+                                        `/dashboard/update-formateur/${formateur._id}`
                                       )
                                     }
                                     className="cursor-pointer text-blue-600 hover:text-blue-900 flex items-center"
