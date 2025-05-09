@@ -4,6 +4,12 @@
 
 Ce projet est un dashboard permettant aux formateurs de créer et gérer des cours multimédias (textes, vidéos, images, fichiers PDF, etc.) pour leurs formations. L'application offre une interface intuitive pour ajouter, modifier, organiser et publier des contenus pédagogiques.
 
+## Preview
+
+Website Preview [ici](https://dashboard-formation.netlify.app/dashboard)
+
+![Dashboard Preview](./images/dashboard.png)
+
 ## Fonctionnalités
 
 ### Authentification & Autorisations
