@@ -55,6 +55,13 @@ const AddCours = () => {
     { value: "pdf", label: "PDF", icon: <FileIcon className="w-5 h-5" /> },
   ];
 
+  useEffect(() => {
+    setCourseData((prev) => ({
+      ...prev,
+      contenu: "",
+    }));
+  }, [courseData.formatContenu]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCourseData((prev) => ({
@@ -67,6 +74,21 @@ const AddCours = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Validate file type based on formatContenu
+    if (courseData.formatContenu === "pdf" && !file.type.includes("pdf")) {
+      toast.error("Veuillez sélectionner un fichier PDF", {
+        action: { label: "✖️" },
+      });
+      return;
+    }
+
+    if (courseData.formatContenu === "image" && !file.type.includes("image")) {
+      toast.error("Veuillez sélectionner une image (PNG, JPG, JPEG)", {
+        action: { label: "✖️" },
+      });
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -651,7 +673,7 @@ const AddCours = () => {
                         id="imageFile"
                         name="imageFile"
                         onChange={handleFileChange}
-                        accept="image/*"
+                        accept="image/png, image/jpeg, image/jpg, image/gif"
                         className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-gray-600 dark:file:text-white dark:hover:file:bg-gray-500"
                       />
                       {courseData.contenu &&
@@ -707,12 +729,12 @@ const AddCours = () => {
                         id="pdfFile"
                         name="pdfFile"
                         onChange={handleFileChange}
-                        accept=".pdf"
+                        accept=".pdf,application/pdf"
                         className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-gray-600 dark:file:text-white dark:hover:file:bg-gray-500"
                       />
                       {courseData.contenu instanceof File && (
                         <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                          Fichier sélectionné : {courseData.contenu.name}
+                          Fichier sélectionné : {courseData?.contenu?.name}
                         </p>
                       )}
                     </div>
