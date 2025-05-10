@@ -130,7 +130,6 @@ const CreateFormateur = () => {
         }
       );
 
-      console.log("Formateur créé:", data);
 
       toast.success("Formateur créé avec succès", {
         description:
@@ -140,7 +139,6 @@ const CreateFormateur = () => {
 
       navigate("/dashboard");
     } catch (error) {
-      console.log("Error creating formateur:", error);
       toast.error(
         "Une erreur s'est produite lors de la création du formateur",
         {

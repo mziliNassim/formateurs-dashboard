@@ -8,6 +8,6 @@ const { getAllactivities } = require("../controllers/activities.js");
 // @desc    Get all activities
 // @route   get /api/activities
 // @access  formateur
-router.get("/", getAllactivities);
+router.get("/", authenticate, getAllactivities);
 
 module.exports = router;

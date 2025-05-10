@@ -91,7 +91,6 @@ const RecentActivity = () => {
           });
         setActivities(activitiesUI);
       } catch (error) {
-        console.log(" fetchActivities ~ error:", error);
         toast.error(
           error?.response?.data?.message ||
             "Erreur lors de la récupération des activités",

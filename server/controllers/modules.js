@@ -181,8 +181,6 @@ const updateModule = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    console.log(" updateModule ~ updatedModule:", updatedModule);
-
     if (!updatedModule) {
       return res.status(404).json({
         success: false,

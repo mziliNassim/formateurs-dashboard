@@ -21,7 +21,6 @@ const deleteUser = async (req, res) => {
   try {
     const { id } = req.params; // récupère l'id de l'utilisateur
     const user = await User.findByIdAndDelete(id);
-    console.log(" deleteUser ~ req.params:", req.params);
 
     if (!user) {
       return res.status(404).json({
@@ -82,7 +81,6 @@ const createUser = async (req, res) => {
       data: newUser,
     });
   } catch (error) {
-    console.error("Erreur lors de la création d'utilisateur:", error);
     res.status(500).json({
       success: false,
       message:

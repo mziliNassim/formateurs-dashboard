@@ -42,33 +42,35 @@ userSchema.statics.emailExists = async function (email) {
   return await this.findOne({ email });
 };
 
-// Match passwords
-userSchema.methods.matchPassword = async function (password, confirmPassword) {
-  if (password !== confirmPassword) throw new Error("Passwords do not match!");
-
-  // Validate password format
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-  if (!passwordRegex.test(password)) {
-    throw new Error(
-      "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number."
-    );
-  }
-  return true;
-};
-
 // Hash the password before saving only if it's modified
 userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
     if (!passwordRegex.test(this.password)) {
       throw new Error(
-        "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number."
+        "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
       );
     }
     this.password = await bcrypt.hash(this.password, 10);
   }
   next();
 });
+
+// Update matchPassword method with the same regex
+userSchema.methods.matchPassword = async function (password, confirmPassword) {
+  if (password !== confirmPassword) throw new Error("Passwords do not match!");
+
+  // Validate password format
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+  if (!passwordRegex.test(password)) {
+    throw new Error(
+      "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character."
+    );
+  }
+  return true;
+};
 
 // Compare password to db password
 userSchema.methods.comparePassword = async function (password) {

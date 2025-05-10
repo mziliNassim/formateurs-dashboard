@@ -103,7 +103,6 @@ const getCourse = async (req, res) => {
 
 const addCourse = async (req, res) => {
   try {
-    console.log(" addCourse ~ req.body:", req.body);
     const {
       titre,
       description,
@@ -293,84 +292,6 @@ const deleteCourse = async (req, res) => {
   }
 };
 
-const getCoursesByModule = async (req, res) => {
-  try {
-    const { moduleId } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(moduleId)) {
-      return res.status(400).json({
-        success: false,
-        message: "ID du module invalide",
-      });
-    }
-
-    const courses = await Cours.find({ module: moduleId })
-      .sort({ ordrePublication: 1 })
-      .select("titre description formatContenu duree ordrePublication statut");
-
-    res.status(200).json({
-      success: true,
-      count: courses.length,
-      data: courses,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Impossible de récupérer les cours pour ce module",
-      error: error.message,
-    });
-  }
-};
-
-const reorderCourses = async (req, res) => {
-  try {
-    const { courseOrders } = req.body;
-
-    if (!Array.isArray(courseOrders)) {
-      return res.status(400).json({
-        success: false,
-        message: "Format de données invalide, un tableau d'objets est attendu",
-      });
-    }
-
-    // Validate all IDs before making any changes
-    for (const item of courseOrders) {
-      if (
-        !item.id ||
-        !item.ordrePublication ||
-        !mongoose.Types.ObjectId.isValid(item.id)
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: "Format de données invalide pour un ou plusieurs cours",
-        });
-      }
-    }
-
-    // Update each course with new order
-    const updatePromises = courseOrders.map((item) =>
-      Cours.findByIdAndUpdate(
-        item.id,
-        { ordrePublication: item.ordrePublication },
-        { new: true, runValidators: true }
-      )
-    );
-
-    await Promise.all(updatePromises);
-
-    res.status(200).json({
-      success: true,
-      message: "Ordre des cours mis à jour avec succès",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Impossible de mettre à jour l'ordre des cours",
-      error: error.message,
-    });
-  }
-};
-
 const publierCours = async (req, res) => {
   try {
     const { id } = req.params;
@@ -415,7 +336,5 @@ module.exports = {
   addCourse,
   updateCourse,
   deleteCourse,
-  getCoursesByModule,
-  reorderCourses,
   publierCours,
 };

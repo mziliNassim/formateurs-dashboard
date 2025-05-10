@@ -81,7 +81,6 @@ const CoursUpdate = () => {
           });
         }
       } catch (error) {
-        console.error("Error fetching course:", error);
         toast.error("Erreur lors du chargement du cours", {
           action: { label: "✖️" },
         });
@@ -167,7 +166,6 @@ const CoursUpdate = () => {
         });
       }
     } catch (error) {
-      console.error("Error updating course:", error);
       if (error.response?.data?.message) {
         toast.error(error.response.data.message, { action: { label: "✖️" } });
       } else {

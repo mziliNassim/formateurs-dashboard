@@ -198,7 +198,6 @@ const UpdateFormateur = () => {
 
       navigate("/dashboard/formateurs");
     } catch (error) {
-      console.error("Error updating formateur:", error);
       toast.error("Une erreur s'est produite lors de la mise à jour", {
         description:
           error?.response?.data?.message || "Veuillez réessayer plus tard",

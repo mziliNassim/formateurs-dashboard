@@ -4,71 +4,6 @@ const User = require("../models/User.js");
 const TokenBlacklist = require("../models/TokenBlacklist.js");
 
 const { generateToken } = require("../middleware/auth.js");
-const {
-  sendWelcomeEmail,
-  sendResetPasswordEmail,
-  sendResetSuccessEmail,
-} = require("../mail/emails.js");
-
-const register = async (req, res) => {
-  try {
-    const { fName, lName, email, password, confirmPassword } = req.body;
-    if (!fName || !lName || !email || !password || !confirmPassword)
-      return res.status(400).json({
-        success: false,
-        message: "Require all fields!",
-        data: null,
-      });
-
-    const user = new User(req.body);
-
-    try {
-      // Valid name
-      await user.validName(fName);
-      await user.validName(lName);
-
-      // Valid Email
-      await user.validEmail(email);
-
-      // Password match
-      await user.matchPassword(password, confirmPassword);
-    } catch (err) {
-      return res.status(400).json({
-        success: false,
-        message: err.message,
-        data: null,
-      });
-    }
-
-    await user.save();
-    const token = await generateToken(user);
-
-    user.password = undefined;
-    user.__v = undefined;
-
-    // send Welcom Email
-    await sendWelcomeEmail(user.email, user.fName, user.lName, user.role);
-
-    return res.status(201).json({
-      success: true,
-      message: "Registration successful!",
-      data: { user, token },
-    });
-  } catch (error) {
-    if (error.code === 11000)
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Email format!",
-        data: null,
-      });
-
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-      data: null,
-    });
-  }
-};
 
 const login = async (req, res) => {
   try {
@@ -128,81 +63,6 @@ const logout = async (req, res) => {
     return res
       .status(200)
       .json({ success: true, message: "Logged out successfully", data: null });
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: error.message, data: null });
-  }
-};
-
-const forgotPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-    const user = await User.findOne({ email });
-    if (!user || !email) {
-      return res.status(500).json({
-        success: false,
-        message: "Invalid email address!",
-        data: null,
-      });
-    }
-
-    // generate reset token
-    const resetToken = crypto.randomBytes(20).toString("hex");
-    const resetTokenExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hours
-
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpiresAt = resetTokenExpiresAt;
-
-    await user.save();
-
-    // send email
-    await sendResetPasswordEmail(
-      user.email,
-      `${process.env.CLIENT_URL}auth/reset-password/${resetToken}`
-    );
-
-    return res.status(200).json({
-      success: true,
-      message: "Reset password link sent to your email",
-      user: null,
-    });
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: error.message, data: null });
-  }
-};
-
-const resetPassword = async (req, res) => {
-  try {
-    const { token } = req.params;
-    const { password } = req.body;
-
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpiresAt: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({
-        state: "warning",
-        message: "Invalid or expired reset link",
-      });
-    }
-
-    // hash && update Password
-    user.password = password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpiresAt = undefined;
-    await user.save();
-
-    await sendResetSuccessEmail(user.email);
-
-    return res.status(201).json({
-      success: true,
-      message: "Password reset successfully",
-    });
   } catch (error) {
     return res
       .status(500)
@@ -285,7 +145,6 @@ const updateProfile = async (req, res) => {
       data: null,
     });
   } catch (error) {
-    console.log("updateProfile ~ error:", error);
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -299,6 +158,7 @@ const updatePassword = async (req, res) => {
     const user = req.user; // From auth middleware
     const { oldPassword, newPassword, confirmPassword } = req.body;
 
+    // Check if all fields are provided
     if (!oldPassword || !newPassword || !confirmPassword) {
       return res.status(400).json({
         success: false,
@@ -307,11 +167,33 @@ const updatePassword = async (req, res) => {
       });
     }
 
-    // Check password length
-    if (newPassword.length < 8) {
+    // Verify that the old password is correct
+    const isMatch = await user.comparePassword(oldPassword);
+    if (!isMatch) {
       return res.status(400).json({
         success: false,
-        message: "Password must be at least 8 characters",
+        message: "Current password is incorrect",
+        data: null,
+      });
+    }
+
+    // Check if new password and confirm password match
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "New password and confirm password do not match",
+        data: null,
+      });
+    }
+
+    // Validate password format using regex directly in the controller
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character",
         data: null,
       });
     }
@@ -335,11 +217,8 @@ const updatePassword = async (req, res) => {
 };
 
 module.exports = {
-  register,
   login,
   logout,
-  forgotPassword,
-  resetPassword,
   getUserInfobyToken,
   updateProfile,
   updatePassword,

@@ -64,7 +64,6 @@ const Login = () => {
         });
       }
     } catch (error) {
-      // console.log("handleLogin ~ error:", error);
       toast.error("Erreur lors de la connexion", {
         description:
           error?.response?.data?.message || "Vérifiez vos identifiants",

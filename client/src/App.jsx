@@ -55,8 +55,6 @@ const App = () => {
             dispatch(setUser({ ...res?.data?.data, token }));
           } else dispatch(clearUser());
         } catch (error) {
-          console.log(" checkLocalStorage ~ error:", error);
-
           // Clear local storage
           dispatch(clearUser());
         }

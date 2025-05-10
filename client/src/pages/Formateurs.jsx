@@ -49,7 +49,6 @@ const Formateurs = () => {
         setUsers(data?.data);
         // toast.success("Utilisateurs chargés avec succès !");
       } catch (error) {
-        // console.error("useEffect ~ error:", error);
         toast.error("Erreur lors du chargement des utilisateurs !");
       } finally {
         setLoading(false);
@@ -79,7 +78,6 @@ const Formateurs = () => {
         setUsers(users.filter((user) => user._id !== id));
         toast.success("Formateur supprimé avec succès !");
       } catch (error) {
-        // console.log("Delete error:", error);
         toast.error("Erreur lors de la suppression du formateur");
       }
     }

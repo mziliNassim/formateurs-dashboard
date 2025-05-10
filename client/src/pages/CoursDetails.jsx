@@ -100,7 +100,6 @@ const CoursDetails = () => {
       });
       fetchCours(); // Refresh course data
     } catch (error) {
-      console.log("handlePublish ~ error:", error);
       toast.error("Erreur lors de la publication", {
         description: error?.response?.data?.message || "",
         action: { label: "✖️" },

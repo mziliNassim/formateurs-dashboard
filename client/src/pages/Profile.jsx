@@ -111,7 +111,6 @@ const ProfileEditPage = () => {
 
   // Handle Form Change
   const handleChange = (e) => {
-    console.log(" ProfileEditPage ~ formData:", formData);
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -201,7 +200,6 @@ const ProfileEditPage = () => {
 
       fetchUserInfos();
     } catch (error) {
-      console.log(" handleProfileSubmit ~ error:", error);
       toast.error("Erreur", {
         description:
           error.response?.data?.message ||
@@ -247,7 +245,6 @@ const ProfileEditPage = () => {
           },
         }
       );
-      console.log(" handlePasswordSubmit ~ data:", data);
 
       toast.success("Mot de passe mis à jour", {
         description: "Votre mot de passe a été mis à jour avec succès",
@@ -260,7 +257,6 @@ const ProfileEditPage = () => {
         confirmPassword: "",
       });
     } catch (error) {
-      console.log(" handlePasswordSubmit ~ error:", error);
       toast.error("Erreur", {
         description:
           error.response?.data?.message ||
